@@ -1,0 +1,111 @@
+:root {
+  --blue:#1976d2;
+  --light:#f5f7fa;
+  --muted:#6c757d;
+  --border:#d7d7d7;
+  --green:#28a745;
+  --red:#dc3545;
+  --darkblue:#0069d9;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--light);
+  margin: 0;
+  padding: 14px;
+  color: #0f172a;
+}
+
+h2 {
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+/* Filter bar */
+.filter-bar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+}
+
+.filter-bar select, 
+.filter-bar button {
+  margin-left:5px;
+  padding:6px 10px;
+  font-size: 13px;
+}
+
+#session {
+  width: 150px;
+  height: 30px;
+  font-size: 13px;
+  padding: 5px;
+  border-radius: 4px;
+  border:1px solid var(--border);
+}
+
+/* Buttons */
+.btn {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.btn-add    { background: var(--green); color:#fff; }
+.btn-save   { background: var(--darkblue); color:#fff; }
+.btn-cancel { background: var(--muted); color:#fff; }
+.btn-delete { background: var(--red); color:#fff; }
+.btn-filter { background: var(--blue); color:#fff; }
+
+/* Table */
+.table-container {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: #fff;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+
+thead th {
+  background: var(--blue);
+  color: #fff;
+  padding: 8px;
+  text-align: center;
+  font-weight: 500;
+}
+
+tbody td {
+  border-bottom: 1px solid #eee;
+  border-right: 1px solid #f1f1f1;
+  padding: 0;
+}
+
+.cell-input {
+  width: 100%;
+  height: 36px;              /* fixed height */
+  line-height: 36px;         /* vertical centering of text */
+  padding: 0 6px;            /* remove vertical padding */
+  box-sizing: border-box;    /* include padding/border in height */
+
+  border: 1px solid #1976d2; /* blue border */
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+  background: #fff;
+  outline: none;
+}
+
+/* Blue highlight when typing */
+.cell-input:focus {
+  border: 2px solid #1976d2;
+  background: #e8f0fe;
+}

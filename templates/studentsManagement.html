@@ -1,0 +1,472 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<style>
+  .filter-row .form-select, .filter-row .form-control, .filter-row .btn { 
+      font-size:12px; 
+      height:30px; 
+      padding:2px 6px; 
+  }
+  .filter-row .btn { min-width:80px; }
+  .students-table-container { 
+      width:100%; 
+      overflow-x:auto; 
+      overflow-y:auto; 
+      max-height:450px; 
+      padding:0 12px; 
+  }
+
+  table.students-table { 
+      width:100%; 
+      border-collapse:collapse; 
+      font-size:12px; 
+      table-layout:auto;
+      text-align:center; 
+  }
+  table.students-table th { 
+      padding:8px 1px; 
+      vertical-align:middle;
+      text-align:center; 
+      overflow:hidden; 
+      text-overflow:ellipsis; 
+  }
+  .students-table thead th { 
+      position:sticky; 
+      top:0; 
+      z-index:2; 
+      background:#212529; 
+      color:#fff; 
+  }
+  table.students-table td { 
+      padding:2px 2px; 
+      vertical-align:middle; 
+      overflow:hidden; 
+      text-overflow:ellipsis; 
+  }
+
+  .col-sno{ min-width:40px; text-align:center } 			
+  .col-session{ min-width:50px; text-align:center } 
+  .col-status{ min-width:50px; text-align:center }
+  .col-reg { min-width:60px ; text-align:center } 
+  .col-roll{ width:55px; text-align:center; } 				
+  .photo-col{ width:45px; text-align:center; } 	        
+  .col-name{ min-width:150px; }  
+  .col-mother,.col-father,.col-name{ min-width:140px; text-align:left; } 
+  /* Force permanent address left-align */
+  table.students-table td.col-permanentaddress {min-width: 140px;  text-align: left !important;}
+  .col-dob{ width:80px; text-align:center; } 				
+  .col-contact{ width:90px; text-align:center; } 
+  .col-Class{ min-width:40px; text-align:center; } 			
+  .col-section{ width:40px; text-align:center; } 
+  .col-actions{ width:75px; text-align:center; }
+  .student-photo{ width:35px; height:40px; object-fit: cover; border-radius:1px; }
+  .photo-col{ text-align:center; vertical-align:middle; }
+/*	.students-table th.col-permanentaddress,.students-table td.col-permanentaddress {text-align: left !important;} Table container scrollbar */
+  .students-table-container::-webkit-scrollbar { height:10px; width:14px; } 
+  .students-table-container::-webkit-scrollbar-thumb { background:gray; border-radius:1px; } 
+  .students-table-container::-webkit-scrollbar-track { background:#f1f1f1; }
+
+  .filter-col{ flex:1 1 120px; max-width:200px } 
+  .filter-search{ flex:2 1 250px; max-width:400px; }
+
+  /* Column dropdown */
+  .dropdown-checkbox { position: relative; display: inline-block; }
+  .dropdown-checkbox-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: nowrap;
+      z-index: 20;
+  }
+  /* Dropdown scrollbar fix */
+  .dropdown-checkbox-content::-webkit-scrollbar { width: 18px; }
+  .dropdown-checkbox-content::-webkit-scrollbar-thumb { background: gray; border-radius:1px; }
+  .dropdown-checkbox-content::-webkit-scrollbar-track { background:#f1f1f1; }
+
+  .dropdown-checkbox-content label {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      font-size: 12px;
+      padding: 2px 0;
+      cursor: pointer;
+  }
+  .dropdown-checkbox.show .dropdown-checkbox-content { display: block; }
+
+  .students-table th.col-action,
+  .students-table td.col-action {
+      width: 60px;
+      min-width: 60px;
+      max-width: 150px;
+      text-align: center;
+      white-space: nowrap;
+  }
+
+  /* Hide all toggle-able columns by default */
+  th[data-col], td[data-col] { display: none; }
+
+</style>
+
+
+<div class="w-100 m-0 p-0">
+
+   <form class="d-flex flex-wrap align-items-end gap-2 mb-2 px-2 filter-row w-100" method="get" action="{{ url_for('students_management') }}">
+    <!-- Session Filter -->
+    <div class="filter-col">
+        <label class="form-label mb-1">Session</label>
+        <select class="form-select" name="session">
+            <option value="">All</option>
+            {% for s in sessions %}
+                <option value="{{ s }}" {% if s == selected_session %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Class Filter -->
+    <div class="filter-col">
+        <label class="form-label mb-1">Class</label>
+        <select class="form-select" name="class">
+            <option value="">All</option>
+            {% for c in classes %}
+                <option value="{{ c }}" {% if c == selected_class %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Section Filter -->
+    <div class="filter-col">
+        <label class="form-label mb-1">Section</label>
+        <select class="form-select" name="section">
+            <option value="">All</option>
+            {% for sec in sections %}
+                <option value="{{ sec }}" {% if sec == selected_section %}selected{% endif %}>{{ sec }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Search -->
+    <div class="filter-search">
+        <label class="form-label mb-1">Search</label>
+        <input type="text" class="form-control" name="search" value="{{ search }}" placeholder="Search by Name or Reg No">
+    </div>
+
+    <!-- Buttons -->
+    <div class="d-flex gap-2">
+        <!-- Filter -->
+        <button type="submit" class="btn btn-sm btn-primary">
+            <i class="bi bi-funnel"></i> Filter
+        </button>
+
+        <!-- Add Student -->
+        <a href="{{ url_for('add_student_form') }}" class="btn btn-sm btn-success">
+            <i class="bi bi-plus-circle"></i> Add
+        </a>
+	    
+        <!-- Reset -->
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('students_management') }}">
+            Reset
+        </a>
+
+        <!-- Export -->
+		<button type="submit" formaction="{{ url_for('export_import') }}" formmethod="post" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-file-earmark-excel"></i> Export
+		</button>
+
+        <!-- Print -->
+        <button type="button" class="btn btn-sm btn-outline-dark" id="printBtn">
+			<i class="bi bi-printer"></i> Print
+		</button>
+
+ <!-- Column Selector -->
+<div class="dropdown-checkbox">
+  <button type="button" class="btn btn-sm btn-outline-primary" id="colSelectBtn">
+    <i class="bi bi-plus-circle"></i> Columns
+  </button>
+  <div class="dropdown-checkbox-content">
+	<label><input type="checkbox" class="col-toggle" data-col="0" checked> SNo</label>
+	<label><input type="checkbox" class="col-toggle" data-col="1" checked> Session</label>
+	<label><input type="checkbox" class="col-toggle" data-col="2" checked> Status</label>
+	<label><input type="checkbox" class="col-toggle" data-col="3" checked> Class</label>
+	<label><input type="checkbox" class="col-toggle" data-col="4" checked> Section</label>
+	<label><input type="checkbox" class="col-toggle" data-col="5" checked> Reg No</label>
+	<label><input type="checkbox" class="col-toggle" data-col="6" checked> Roll No</label>
+	<label><input type="checkbox" class="col-toggle" data-col="7" checked> Photo</label>
+	<label><input type="checkbox" class="col-toggle" data-col="8" checked> Student Name</label>
+	<label><input type="checkbox" class="col-toggle" data-col="9" checked> Father Name</label>
+	<label><input type="checkbox" class="col-toggle" data-col="10" checked> Mother Name</label>
+	<label><input type="checkbox" class="col-toggle" data-col="11" checked> DOB</label>
+	<label><input type="checkbox" class="col-toggle" data-col="12" checked> Emergency Contact</label>
+	<label><input type="checkbox" class="col-toggle" data-col="13" checked> Aadhar</label>
+	<label><input type="checkbox" class="col-toggle" data-col="14" checked> Gender</label>
+	<label><input type="checkbox" class="col-toggle" data-col="15" checked> Category</label>
+	<label><input type="checkbox" class="col-toggle" data-col="16" checked> Mothers Contact</label>
+	<label><input type="checkbox" class="col-toggle" data-col="17" checked> Mothers Occupation</label>
+	<label><input type="checkbox" class="col-toggle" data-col="18" checked> Fathers Contact</label>
+	<label><input type="checkbox" class="col-toggle" data-col="19" checked> Fathers Occupation</label>
+	<label><input type="checkbox" class="col-toggle" data-col="20" checked> Local Address</label>
+	<label><input type="checkbox" class="col-toggle" data-col="21" checked> Local District</label>
+	<label><input type="checkbox" class="col-toggle" data-col="22" checked> Local City</label>
+	<label><input type="checkbox" class="col-toggle" data-col="23" checked> Local State</label>
+	<label><input type="checkbox" class="col-toggle" data-col="24" checked> Local Pin</label>
+	<label><input type="checkbox" class="col-toggle" data-col="25" checked> Permanent Address</label>
+	<label><input type="checkbox" class="col-toggle" data-col="26" checked> Permanent District</label>
+	<label><input type="checkbox" class="col-toggle" data-col="27" checked> Permanent City</label>
+	<label><input type="checkbox" class="col-toggle" data-col="28" checked> Permanent State</label>
+	<label><input type="checkbox" class="col-toggle" data-col="29" checked> Permanent Pin</label>
+	<label><input type="checkbox" class="col-toggle" data-col="30" checked> Nationality</label>
+	<label><input type="checkbox" class="col-toggle" data-col="31" checked> Blood Group</label>
+	<label><input type="checkbox" class="col-toggle" data-col="32" checked> Religion</label>
+	<label><input type="checkbox" class="col-toggle" data-col="33" checked> Cast</label>
+	<label><input type="checkbox" class="col-toggle" data-col="34" checked> PEN</label>
+	<label><input type="checkbox" class="col-toggle" data-col="35" checked> PAN</label>
+	<label><input type="checkbox" class="col-toggle" data-col="36" checked> Height</label>
+	<label><input type="checkbox" class="col-toggle" data-col="37" checked> Weight</label>
+	<label><input type="checkbox" class="col-toggle" data-col="38" checked> Admission Date</label>
+	<label><input type="checkbox" class="col-toggle" data-col="39" checked> Medicine Prescription</label>
+	<label><input type="checkbox" class="col-toggle" data-col="40" checked> Identification Marks</label>
+	<label><input type="checkbox" class="col-toggle" data-col="41" checked> Name Of Previous School</label>
+	<label><input type="checkbox" class="col-toggle" data-col="42" checked> Email</label>
+	<label><input type="checkbox" class="col-toggle" data-col="43" checked> Att</label>
+
+  </div>
+</div>
+</div>
+</form>
+
+<div class="students-table-container">
+  <table class="students-table table-bordered table-striped align-middle mb-0">
+    <thead>
+      <tr>
+        <th class="col-sno">SNo</th>
+			<th class="col-session">Session</th>
+			<th class="col-status">Status</th>
+			<th class="col-Class">Class</th>
+			<th class="col-section">Sect.</th>
+			<th class="col-reg">Reg No</th>
+			<th class="col-roll">Roll No</th>
+			<th class="photo-col">Photo</th>
+			<th class="col-name">Student Name</th>
+			<th class="col-father">Father Name</th>
+			<th class="col-mother">Mother Name</th>
+			<th class="col-dob">D. O. B.</th>
+			<th class="col-emergencycontact">Em. Contact</th>
+			<th class="col-aadhar">Aadhar</th>
+			<th class="col-gender">Gender</th>
+			<th class="col-category">Category</th>
+			<th class="col-motherscontact">Mothers Contact</th>
+			<th class="col-mothersoccupation">Mothers Occupation</th>
+			<th class="col-fatherscontact">Fathers Contact</th>
+			<th class="col-fathersoccupation">Fathers Occupation</th>
+			<th class="col-localaddress">Local Address</th>
+			<th class="col-ldistrict">Local District</th>
+			<th class="col-lcity">Local City</th>
+			<th class="col-lstate">Local State</th>
+			<th class="col-lpin">Local Pin</th>
+			<th class="col-permanentaddress">Permanent Address</th>
+			<th class="col-pdistrict">Permanent District</th>
+			<th class="col-pcity">Permanent City</th>
+			<th class="col-pstate">Permanent State</th>
+			<th class="col-ppin">Permanent Pin</th>
+			<th class="col-nationality">Nationality</th>
+			<th class="col-bloodgroup">Blood Group</th>
+			<th class="col-religion">Religion</th>
+			<th class="col-cast">Cast</th>
+			<th class="col-pen">PEN</th>
+			<th class="col-pan">PAN</th>
+			<th class="col-height">Height</th>
+			<th class="col-weight">Weight</th>
+			<th class="col-admissiondate">Admission Date</th>
+			<th class="col-medicineprescription">Medicine Prescription</th>
+			<th class="col-identificationmarks">Identification Marks</th>
+			<th class="col-previousschool">Name Of Previous School</th>
+			<th class="col-email">Email</th>
+			<th class="col-att">Att</th>
+
+
+        <!-- Always Visible Action Column -->
+        <th class="col-action" >Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for stu in students %}
+      <tr>
+        <td class="col-sno">{{ loop.index }}</td>
+        <td class="col-session">{{ stu.Years }}</td>
+        <td class="col-status">{{ stu.Status }}</td>
+        <td class="col-Class">{{ stu.Class }}</td>
+        <td class="col-section">{{ stu.Section }}</td>
+        <td class="col-reg">{{ stu.RegNo }}</td>
+        <td class="col-roll">{{ stu.RollNo }}</td>
+        <td class="photo-col">
+          <img src="{% if stu.Photo %}{{ url_for('static', filename='uploads/' ~ stu.Photo) }}{% else %}{{ url_for('static', filename='default.png') }}{% endif %}"
+               class="student-photo" alt=" ">
+        </td>
+        <td class="col-name">{{ stu.StudentName }}</td>
+		<td class="col-father">{{ stu.FatherName }}</td>
+		<td class="col-mother">{{ stu.MotherName }}</td>
+		<td class="col-dob">{{ stu.Date_Of_Birth }}</td>
+		<td class="col-emergencycontact">{{ stu.EmergencyContact }}</td>
+		<td class="col-aadhar">{{ stu.Aadhar }}</td>
+		<td class="col-gender">{{ stu.Gender }}</td>
+		<td class="col-Category">{{ stu.Category }}</td>
+		<td class="col-motherscontact">{{ stu.MothersContact }}</td>
+		<td class="col-mothersoccupation">{{ stu.MothersOccupation }}</td>
+		<td class="col-fatherscontact">{{ stu.FathersContact }}</td>
+		<td class="col-fathersoccupation">{{ stu.FathersOccupation }}</td>
+		<td class="col-localaddress">{{ stu.LocalAddress }}</td>
+		<td class="col-ldistrict">{{ stu.LDistrict }}</td>
+		<td class="col-lcity">{{ stu.LCity }}</td>
+		<td class="col-lstate">{{ stu.LState }}</td>
+		<td class="col-lpin">{{ stu.Lpin }}</td>
+		<td class="col-permanentaddress">{{ stu.PermanentAddress }}</td>
+		<td class="col-pdistrict">{{ stu.PDistrict }}</td>
+		<td class="col-pcity">{{ stu.PCity }}</td>
+		<td class="col-pstate">{{ stu.PState }}</td>
+		<td class="col-ppin">{{ stu.Ppin }}</td>
+		<td class="col-nationality">{{ stu.Nationality }}</td>
+		<td class="col-bloodgroup">{{ stu.BloodGroup }}</td>
+		<td class="col-religion">{{ stu.Religion }}</td>
+		<td class="col-cast">{{ stu.Cast }}</td>
+		<td class="col-pen">{{ stu.PEN }}</td>
+		<td class="col-pan">{{ stu.PAN }}</td>
+		<td class="col-height">{{ stu.Height }}</td>
+		<td class="col-weight">{{ stu.Weight }}</td>
+		<td class="col-admissiondate">{{ stu.AdmissionDate }}</td>
+		<td class="col-medicineprescription">{{ stu.MedicinePrescription }}</td>
+		<td class="col-identificationmarks">{{ stu.IdentificationMarks }}</td>
+		<td class="col-previousschool">{{ stu.NameOfPreviousSchool }}</td>
+		<td class="col-email">{{ stu.Email }}</td>
+		<td class="col-att">{{ stu.Att }}</td>
+
+        <!-- Always Visible Action Column -->
+        <td class="col-action">
+          <a href="{{ url_for('edit_student_form', student_id=stu.SNo) }}" class="btn btn-sm btn-primary">
+            <i class="bi bi-pencil-square"></i>
+          </a>
+          <a href="{{ url_for('delete_student', student_id=stu.SNo) }}" class="btn btn-sm btn-danger"
+             onclick="return confirm('Delete this student?')">
+            <i class="bi bi-trash"></i>
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  // Toggle column by index
+  function toggleColumn(colIndex, show) {
+    document.querySelectorAll("table.students-table tr").forEach(row => {
+      if (row.children[colIndex]) {
+        row.children[colIndex].style.display = show ? "" : "none";
+      }
+    });
+  }
+
+  // Save selected columns to DB
+  async function saveColumnPrefs() {
+    let selected = [];
+    document.querySelectorAll(".col-toggle:checked").forEach(cb => {
+      selected.push(cb.dataset.col);
+    });
+
+    try {
+      await fetch("/save_column_prefs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ columns: selected.join(",") })
+      });
+    } catch (err) {
+      console.error("Error saving prefs:", err);
+    }
+  }
+
+  // Load prefs from DB and apply immediately
+  async function loadColumnPrefs() {
+    try {
+      let res = await fetch("/get_column_prefs");
+      if (!res.ok) return;
+      let data = await res.json();
+
+      if (data.success && data.columns) {
+        let prefs = data.columns.split(",");
+
+        document.querySelectorAll(".col-toggle").forEach(cb => {
+          if (prefs.includes(cb.dataset.col)) {
+            cb.checked = true;
+            toggleColumn(cb.dataset.col, true);
+          } else {
+            cb.checked = false;
+            toggleColumn(cb.dataset.col, false);
+          }
+        });
+      } else {
+        // First time → show all
+        document.querySelectorAll(".col-toggle").forEach(cb => {
+          cb.checked = true;
+          toggleColumn(cb.dataset.col, true);
+        });
+      }
+    } catch (err) {
+      console.error("Error loading prefs:", err);
+    }
+  }
+
+  // --- Event listeners ---
+  document.querySelectorAll(".col-toggle").forEach(cb => {
+    cb.addEventListener("change", function () {
+      toggleColumn(this.dataset.col, this.checked);
+      saveColumnPrefs();
+    });
+  });
+
+  document.getElementById("colSelectBtn").addEventListener("click", function () {
+    this.parentElement.classList.toggle("show");
+  });
+
+  document.addEventListener("click", function (e) {
+    let dropdown = document.querySelector(".dropdown-checkbox");
+    if (dropdown && !dropdown.contains(e.target) && e.target.id !== "colSelectBtn") {
+      dropdown.classList.remove("show");
+    }
+  });
+
+ // --- Initial load ---
+  loadColumnPrefs();
+});
+
+// ----- Print Button JS -----
+document.getElementById('printBtn').addEventListener('click', function() {
+    // Collect selected columns from checkboxes
+    let selectedCols = [];
+    document.querySelectorAll('.col-toggle').forEach(cb => {
+        if(cb.checked){
+            selectedCols.push(cb.dataset.col);
+        }
+    });
+
+    // Get selected values from dropdowns by name
+    let session = document.querySelector('select[name="session"]').value || 'All';
+    let cls     = document.querySelector('select[name="class"]').value || 'All';
+    let section = document.querySelector('select[name="section"]').value || 'All';
+
+    // Build the URL for the print route
+    let url = `/print_student_details?session=${encodeURIComponent(session)}&class=${encodeURIComponent(cls)}&section=${encodeURIComponent(section)}&cols=${selectedCols.join(',')}`;
+
+    // Open the PDF in a new tab
+    window.open(url, '_blank');
+});
+
+</script>
+{% endblock %}

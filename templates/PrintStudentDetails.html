@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Student Report</title>
+<style>
+/* ---------- PAGE SETUP ---------- */
+@page {
+    size: A4 landscape;
+    margin: 25mm 10mm 10mm 20mm; /* top right bottom left */
+
+    /* Header frame for repeating content */
+    @frame header_frame {
+        -pdf-frame-content: repeating_header;
+        top: 12mm; 
+        left: 15mm; 
+        width: 267mm; /* A4 landscape width minus margins */
+        height: 20mm;
+    }
+
+    /* Footer frame for repeating footer */
+    @frame footer_frame {
+        -pdf-frame-content: repeating_footer;
+        bottom: 10mm; 
+        left: 15mm; 
+        width: 267mm; 
+        height: 0mm;
+    }
+}
+
+/* ---------- BODY ---------- */
+body {
+    font-family: Arial, sans-serif;
+    font-size: 9pt;
+    margin: 0;
+    padding: 0;
+}
+
+/* ---------- SCHOOL NAME ---------- */
+#Schoolname {
+    text-align: center;
+    margin: 0mm 0 2mm 0; /* top 0mm, bottom 2mm */
+    font-size: 15pt;
+    font-weight: bold;
+}
+
+/* ---------- REPEATING HEADER ---------- */
+#repeating_header {
+    text-align: center;
+    font-size: 12pt;
+    font-weight: bold;
+    margin-bottom: 2mm;
+}
+
+/* ---------- REPEATING FOOTER ---------- */
+#repeating_footer {
+    text-align: right;
+    font-size: 9pt;
+}
+
+/* ---------- TABLE ---------- */
+table {
+    width: 100%; /* full width within page margins */
+    border-collapse: collapse;
+    table-layout: auto; /* auto-adjust column widths */
+    margin-top: 1mm;
+	
+	 word-wrap: break-word;
+}
+
+thead {
+    display: table-header-group; /* repeat on every page */
+}
+
+tfoot {
+    display: table-row-group;
+}
+
+tr {
+    page-break-inside: avoid;
+}
+
+th, td {
+    border: 0.05px solid #000;
+    padding: 3px 1px 0px 3px;
+    font-size: 9pt;
+    vertical-align: middle;
+}
+
+th { 
+    background-color: #f2f2f2; 
+    font-weight: bold; 
+    text-align: center; 
+}
+
+/* Column specific width/alignment for fixed columns */
+td.col-sno { width: 35px; text-align: center; }
+td.col-regno, td.col-dob, td.col-rollno, td.col-class, td.col-section { width: 52px; text-align:center; padding: 1px 0 0 0; }
+/* comon field */
+td.col-dob, td.col-aadhar, td.col-gender, td.col-Category{min-width:40; max-width:100; text-align: center;word-wrap: break-word;}
+
+/* Flexible columns: no fixed width, auto adjusts */
+td.col-name, td.col-mother, td.col-father,
+td.col-localaddress, td.col-permanentaddress,
+td.col-identificationmarks, td.col-medicineprescription {
+    text-align: left;
+    vertical-align: top;
+    word-wrap: break-word;
+}
+
+/* RegNo + Photo */
+.regno-photo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid #131;
+}
+.regno-photo span { font-size: 10pt; margin-bottom: 0px; }
+img.student-photo { width: 42px; height: 40px; object-fit: cover; border: 2px solid #343; }
+</style>
+</head>
+<body>
+   <!-- ---------- REPEATING HEADER ---------- -->
+  <div id="repeating_header">RPD School Varanasi<br>
+    Student Details Report - Session {{ session_year }} </br>
+  </div>
+
+  <!-- ---------- TABLE ---------- -->
+  <div style="margin-top:2mm;">
+    <table>
+      <thead>
+        <tr>
+          {% for key, name in columns %}
+            <th class="col-{{ key|lower }}">{{ name }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for stu in students %}
+        <tr>
+          <td class="col-sno">{{ loop.index }}</td>
+          {% for key, name in columns %}
+            {% if key != "SNo" %}
+            <td class="col-{{ key|lower }}">
+              {% if key == "RegNo" %}
+                <div class="regno-photo">
+                  <span>{{ stu.RegNo }}</span>
+                  {% if stu.Photo %}
+                    <img src="{{ photo_base }}/{{ stu.Photo }}" class="student-photo" alt="">
+                  {% endif %}
+                </div>
+              {% else %}
+                {{ stu.get(key, "") }}
+              {% endif %}
+            </td>
+            {% endif %}
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ---------- FOOTER ---------- -->
+  <div id="repeating_footer">
+    Page <pdf:pagenumber/> / <pdf:pagecount/>
+  </div>
+  <script>
+document.getElementById("printBtn").addEventListener("click", function() {
+    let session = document.getElementById("sessionSelect").value;
+    let cls     = document.getElementById("classSelect").value;
+    let section = document.getElementById("sectionSelect").value;
+    let cols    = getSelectedColumns();
+
+    let url = `/print_student_details?session=${session}&class=${cls}&section=${section}&cols=${cols}`;
+    window.open(url, "_blank");
+});
+</script>
+</body>
+
+</html>

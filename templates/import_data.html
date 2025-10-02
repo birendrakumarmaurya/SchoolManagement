@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Import Student Data</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f4f4;
+        overflow: hidden; /* page scroll disabled so table scrolls only */
+        margin: 0;
+        padding: 0;
+        font-size: 12px;
+        color: #333;
+    }
+
+    .top-bar {
+	
+		display: flex;
+		align-items: center;
+		justify-content: center;   /* centers the title */
+		position: relative;        /* needed for absolute back button */
+		background-color: #1c6ea4;
+		color: white;
+		padding: 8px 12px;
+	}
+
+	.top-bar a {
+		position: absolute;
+		left: 12px;   /* stick the back button to the left */
+		text-decoration: none;
+		color: white;
+		font-weight: bold;
+	}
+	
+    .form-container {
+        padding: 8px 10px;
+        background-color: #ffffff;
+        margin: 10px;
+        border-radius: 6px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .form-row {
+        display: flex;
+        flex-wrap: nowrap;           /* try to keep in single line */
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-row label {
+        min-width: 60px;
+    }
+
+    .form-row select,
+    .form-row input[type="file"] {
+        padding: 4px 6px;
+        font-size: 13px;
+		width: 120px; 
+    }
+
+    /* Button styles */
+    .form-row button, .form-row a {
+        padding: 6px 10px;
+        font-size: 13px;
+        cursor: pointer;
+        border: none;
+        border-radius: 2px;
+        text-decoration: none;
+        color: white;
+    }
+
+    .btn-import { background-color: #28a745;width:80px; }   /* green */
+    .btn-reset  { background-color: #28a745;width:60px; }   /* green */
+    .btn-save   { background-color: #28a745;width:80px; }   /* green (save) */
+
+    .table-wrapper {
+        margin: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: white;
+        max-height: calc(120vh - 220px);      /* Table fixed area */
+        overflow-x: auto;       /* horizontal scroll inside table */
+        overflow-y: auto;       /* vertical scroll inside table */
+    }
+
+    table {
+        border-collapse: collapse;
+        width: max-content; /* Expand according to columns */
+        min-width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #ccc;
+        padding: 6px 10px;
+        white-space: nowrap;
+        font-size: 13px;
+    }
+
+    th {
+        position: sticky;
+        top: 0;
+        background: #1c6ea4;
+        color: white;
+        z-index: 2;
+    }
+
+    tr:nth-child(even) td {
+        background-color: #f8f9fa;
+    }
+
+    tr:hover td {
+        background-color: #e2f0ff;
+    }
+
+    td[contenteditable="true"]:focus {
+        outline: 2px solid #4caf50;
+        background: #f0fff0;
+    }
+
+    /* small helper: group right-side small buttons */
+    .right-group {
+        margin-left: 10px;
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+	
+    /* Save button styling when not active (no preview) */
+    .btn-save.disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+
+
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+    <div style="font-size:12px; font-weight:bold;">
+        <a href="{{ url_for('students_management') }}">← Back </a>
+    </div>
+    <div style="font-size:15px; font-weight:bold;">
+    Import/ Export Student's Detaisl
+</div>
+</div>
+
+<div class="form-container">
+    <!-- Upload form: selects + file + Import -->
+    <form id="uploadForm" method="post" enctype="multipart/form-data" class="form-row">
+        <label for="session">Session:</label>
+        <select name="session" id="session">
+            <option value="">All</option>
+            {% for s in sessions %}
+            <option value="{{ s }}" {% if s == selected_session %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="class">Class:</label>
+        <select name="class" id="class">
+            <option value="">All</option>
+            {% for c in classes %}
+            <option value="{{ c }}" {% if c == selected_class %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="section">Section:</label>
+        <select name="section" id="section">
+            <option value="">All</option>
+            {% for sec in sections %}
+            <option value="{{ sec }}" {% if sec == selected_section %}selected{% endif %}>{{ sec }}</option>
+            {% endfor %}
+        </select>
+
+        <input type="file" name="excel_file" accept=".xlsx,.xls">
+			<div style="padding:10px; font-size:15px; color:#633;">
+				{% if preview %}
+				Total Records: {{ preview|length }}
+				{% else %}
+				Total Records: 0
+				{% endif %}
+			</div>
+
+
+        <!-- right-group contains Import, Save, Reset grouped -->
+        <div class="right-group" style="margin-left:auto;">
+            <button type="submit" class="btn-import">Import</button>
+
+            <!-- Save button: only active when preview exists -->
+            {% if preview %}
+            <button type="button" id="saveBtn" class="btn-save" onclick="saveEditedPreview()">Save</button>
+            {% else %}
+            <button type="button" id="saveBtn" class="btn-save disabled" title="Upload file to enable Save">Save</button>
+            {% endif %}
+
+            <a href="{{ url_for('import_data') }}" class="btn-reset">Reset </a>
+        </div>
+    </form>
+</div>
+
+<!-- Preview table: only render when preview is present -->
+{% if preview %}
+<div class="table-wrapper" id="tableWrapper">
+  <table id="previewTable">
+    <thead>
+      <tr>
+        {% for col in preview[0].keys() %}
+          <th>{{ col }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in preview %}
+        <tr>
+          {% for col, val in row.items() %}
+            {% if col in ["SNo"] %}
+              <td>{{ val }}</td> <!-- keep non-editable -->
+            {% else %}
+              <td contenteditable="true">{{ val }}</td>
+            {% endif %}
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- Hidden save form: receives JSON updated_data and posts to import_save -->
+<form id="saveForm" method="post" action="{{ url_for('import_save') }}">
+  <input type="hidden" name="updated_data" id="updated_data">
+</form>
+
+<script>
+/* Arrow-key navigation for contenteditable cells */
+document.addEventListener("keydown", function (e) {
+    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        let cell = document.activeElement;
+        if (cell && cell.tagName === "TD" && cell.isContentEditable) {
+            e.preventDefault(); // stop cursor moving inside text
+
+            const tbody = cell.closest("tbody");
+            const tr = cell.parentElement;
+            const rowIndex = Array.from(tbody.children).indexOf(tr);
+            const colIndex = Array.from(tr.children).indexOf(cell);
+
+            let targetCell = null;
+
+            if (e.key === "ArrowRight") {
+                targetCell = cell.nextElementSibling;
+            } else if (e.key === "ArrowLeft") {
+                targetCell = cell.previousElementSibling;
+            } else if (e.key === "ArrowDown") {
+                const nextRow = tbody.children[rowIndex + 1];
+                if (nextRow) targetCell = nextRow.children[colIndex];
+            } else if (e.key === "ArrowUp") {
+                const prevRow = tbody.children[rowIndex - 1];
+                if (prevRow) targetCell = prevRow.children[colIndex];
+            }
+
+            if (targetCell && targetCell.isContentEditable) {
+                targetCell.focus();
+            }
+        }
+    }
+});
+
+/* Gather table data into JSON and put into hidden input */
+function collectTableData() {
+  const table = document.getElementById("previewTable");
+  if(!table) return "[]";
+  const rows = [];
+  const headers = Array.from(table.querySelectorAll("thead th")).map(h => h.innerText.trim());
+
+  table.querySelectorAll("tbody tr").forEach(tr => {
+    const cells = Array.from(tr.querySelectorAll("td")).map(td => td.innerText.trim());
+    let rowObj = {};
+    headers.forEach((h, i) => rowObj[h] = cells[i]);
+    rows.push(rowObj);
+  });
+
+  return JSON.stringify(rows);
+}
+
+/* Called when Save button (top row) clicked */
+function saveEditedPreview() {
+  // create payload
+  const json = collectTableData();
+  // put into hidden input
+  document.getElementById("updated_data").value = json;
+
+  // submit hidden save form
+  document.getElementById("saveForm").submit();
+}
+
+/* Prevent accidental page scrolling with arrow keys while editing table:
+   allow contenteditable navigation only when focused; other arrow keys behave normally */
+document.addEventListener('keydown', function(e){
+  const active = document.activeElement;
+  if (active && active.tagName === "TD" && active.isContentEditable) {
+    // handled in arrow-key handler above
+  }
+});
+</script>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-messages">
+      {% for category, msg in messages %}
+        <div class="alert {{ category }}">
+          {{ msg }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+</body>
+</html>

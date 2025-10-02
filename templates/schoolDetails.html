@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>School Details</title>
+ 
+ <style>
+  body { font-family: Arial, sans-serif; margin:20px; }
+
+  /* Header bar (filters + buttons) */
+  .filter-bar {
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:0px;
+    background:#fff;
+    padding:10px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    border-bottom:2px solid #ccc;
+  }
+.top-bar {
+  display: flex;
+  justify-content: space-between; /* pushes left/right apart */
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.top-bar h2 {
+  margin: 0;
+}
+
+.home-link {
+  text-decoration: none;
+  color: #3498db;
+  font-weight: bold;
+}
+
+.home-link:hover {
+  text-decoration: underline;
+}
+
+  table { border-collapse: collapse; width:100%; margin:0; }
+  th, td { border:1px solid #ccc; padding:6px; text-align:center; }
+
+  th {
+    background:#3498db;
+    color:white;
+    position: sticky;   /* keep header visible */
+    top: 0px;          /* height of filter-bar (adjust if needed) */
+    z-index: 999;
+  }
+
+  .cell-input {
+    width:100%;
+    border:none;
+    text-align:center;
+    height:20px;
+    outline:none;
+    background:transparent;
+    box-sizing:border-box;
+  }
+
+  .btn { padding:1px 10px;height:30px; margin-left:5px; cursor:pointer; }
+  .btn-delete { background:#e74c3c; color:white; border:none; }
+  .btn-add { background:#2ecc71; color:white; border:none; }
+  .btn-save { background:#3498db; color:white; border:none; }
+  .btn-cancel { background:#95a5a6; color:white; border:none; }
+
+#session {
+    height: 38px;             /* same height */
+    font-size: 14px;
+    padding: 5px 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;   /* ensures same sizing */
+}
+
+#btn-filter {               /* was .btn-filter */
+    height: 38px;
+	width: 100px;
+    font-size: 14px;
+    padding: 5px 12px;
+    border: 1px solid #ccc;
+    border-radius: 1px;
+    background: #1976d2;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#btn-filter:hover {
+    background: #125ca1;
+}
+  /* Table scroll area */
+  .table-container {
+    max-height: 400px;   /* adjust for your layout */
+    overflow-y: auto;
+    border:1px solid #ccc;
+  }
+</style>
+
+</head>
+<body>
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+  <div style="flex:1;"></div> <!-- empty left space -->
+  <h2 style="margin:0; flex:1; text-align:center;">School Details</h2>
+  <a href="/dashboard" style="flex:1; text-align:right; text-decoration:none; color:#3498db; font-weight:bold;">
+    Go to Home...
+  </a>
+</div>
+
+
+
+
+  <!-- Filter & Action Bar -->
+  <div class="filter-bar">
+    <div>
+      <label for="session">Select Session:</label>
+      <select id="session" name="session">
+        <option value="">-- All --</option>
+        {% for s in sessions %}
+          <option value="{{ s }}" {% if selected_session == s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+      <button id="btn-filter">Filter</button>
+    </div>
+    <div>
+      <button id="btn-add" class="btn btn-add">Add Record</button>
+      <button id="btn-save" class="btn btn-save">Save All</button>
+      <button id="btn-cancel" class="btn btn-cancel">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Editable Table -->
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>SNo</th><th>Session</th><th>Classes</th><th>Sections</th><th>Month</th>
+          <th>Admission Fees</th><th>Monthly Fees</th><th>Practical Fees</th>
+          <th>Exam Fees</th><th>Misc. Charge</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        {% for row in records %}
+          {% set sno = row[0] %}
+          <tr data-sno="{{ sno }}">
+            <td>{{ sno }}</td>
+            <td><input type="text" class="cell-input" value="{{ row[1] }}"></td>
+            <td><input type="text" class="cell-input" value="{{ row[2] }}"></td>
+            <td><input type="text" class="cell-input" value="{{ row[3] }}"></td>
+            <td><input type="text" class="cell-input" value="{{ row[4] }}"></td>
+            <td><input type="number" step="0.01" class="cell-input" value="{{ row[5] }}"></td>
+            <td><input type="number" step="0.01" class="cell-input" value="{{ row[6] }}"></td>
+            <td><input type="number" step="0.01" class="cell-input" value="{{ row[7] }}"></td>
+            <td><input type="number" step="0.01" class="cell-input" value="{{ row[8] }}"></td>
+            <td><input type="number" step="0.01" class="cell-input" value="{{ row[9] }}"></td>
+            <td>
+              <form method="POST" action="{{ url_for('deleteRecord', sno=sno) }}" style="display:inline;">
+                <button type="submit" class="btn btn-delete" onclick="return confirm('Delete this record?');">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="11">No records found</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+<script>
+// Filter
+document.getElementById('btn-filter').addEventListener('click', function(){
+  const sel = document.getElementById('session');
+  const qs = sel.value ? ('?session=' + encodeURIComponent(sel.value)) : '';
+  window.location.href = '/schoolDetails' + qs;
+});
+
+// Cancel -> reload
+document.getElementById('btn-cancel').addEventListener('click', function(){
+  location.reload();
+});
+
+// Add new row
+document.getElementById('btn-add').addEventListener('click', function(){
+  const tbody = document.getElementById('table-body');
+  const tempId = 'new' + Math.random().toString(36).slice(2,8);
+  const newRow = document.createElement('tr');
+  newRow.dataset.sno = tempId;
+  newRow.innerHTML = `
+    <td>New</td>
+    <td><input type="text" class="cell-input" value=""></td>
+    <td><input type="text" class="cell-input" value=""></td>
+    <td><input type="text" class="cell-input" value=""></td>
+    <td><input type="text" class="cell-input" value=""></td>
+    <td><input type="number" step="0.01" class="cell-input" value="0.00"></td>
+    <td><input type="number" step="0.01" class="cell-input" value="0.00"></td>
+    <td><input type="number" step="0.01" class="cell-input" value="0.00"></td>
+    <td><input type="number" step="0.01" class="cell-input" value="0.00"></td>
+    <td><input type="number" step="0.01" class="cell-input" value="0.00"></td>
+    <td>New Row</td>
+  `;
+  tbody.appendChild(newRow);
+});
+
+// Save All
+document.getElementById('btn-save').addEventListener('click', function(){
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = '/updateSchoolDetails';
+
+  const rows = document.querySelectorAll('#table-body tr');
+  const fields = ['Session','classes','sections','month','admitionFees','monthlyFees','practicalFees','examFees','miscellaneousCharge'];
+
+  rows.forEach(r => {
+    const sno = r.dataset.sno || 'new' + Math.random().toString(36).slice(2,8);
+    const inputs = r.querySelectorAll('.cell-input');
+    fields.forEach((f, idx) => {
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = `${f}_${sno}`;
+      input.value = inputs[idx]?.value || '';
+      form.appendChild(input);
+    });
+  });
+
+  document.body.appendChild(form);
+  form.submit();
+});
+//========== to change row
+document.addEventListener('keydown', function(e) {
+  if (e.key === "Enter") {
+    const current = e.target;
+    if (current.classList.contains("cell-input")) {
+      e.preventDefault(); // stop form submit or default navigation
+
+      const td = current.closest("td");
+      const colIndex = td.cellIndex;  // which column
+      const row = td.parentElement;   // current row
+      const nextRow = row.nextElementSibling;
+
+      if (nextRow) {
+        const nextCell = nextRow.cells[colIndex];
+        if (nextCell) {
+          const nextInput = nextCell.querySelector(".cell-input");
+          if (nextInput) {
+            nextInput.focus();
+          }
+        }
+      }
+    }
+  }
+});
+//-------- for selecting row----------
+
+
+//------------------------------
+
+</script>
+</body>
+</html>

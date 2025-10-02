@@ -1,0 +1,170 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>School Dashboard</title>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+
+</head>
+
+<body>
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+           <!--img src="Images/logo.png" alt="School Logo ----not in use"-->
+		   <img src="{{ url_for('static', filename='Images/icon.ico') }}" class="School Logo">
+		   
+        </div>
+		
+		
+		<div class="user-info">
+			<img src="{{ url_for('static', filename=photo) }}" alt="User Photo" class="user-icon">
+			<span class="user-name">{{ fullname }}</span>
+		</div>
+		
+        <nav class="menu">
+		
+		<div class="breadcrumb">DASHBOARD</div>
+			<ul class="menu">
+			<li class="menu-item has-sub">
+    		<span>Organisation</span>
+    			<ul class="sub-menu">
+					<li></li>
+					<a href="{{ url_for('schoolDetails') }}">Add School Details</a></li>
+					<li>
+					</li>
+					<li><a href="/import_data">Import Data</a></li>
+
+					<li></li> 
+    			</ul>
+				</li>
+
+			<li class="menu-item has-sub">
+				<span>Students</span>
+				<ul class="sub-menu">
+				<li></li>
+					<li><a href="{{ url_for('add_student_form') }}">Students Admision</a></li>
+					<li></li>
+					<li><a href="/studentsManagement">Students Management</a></li>
+					<li></li>
+				</ul>
+			</li>
+
+			<li class="menu-item has-sub">
+				<span>Payment</span>
+				<ul class="sub-menu">
+					<li>Fee Collection</li>
+					<li>Payment History</li>
+				</ul>
+			</li>
+
+			<li class="menu-item has-sub">
+				<span>Reports</span>
+				<ul class="sub-menu">
+					<li>Attendance Report</li>
+					<li>Fee Report</li>
+				</ul>
+			</li>
+
+			<li class="menu-item has-sub">
+				<span>Users</span>
+				<ul class="sub-menu">
+				<li><a href="{{ url_for('signup') }}">Add New User</a></li>
+				<li><a href="{{ url_for('forgot_password') }}">Reset Password?</a></a></li>
+				
+				</ul>
+			</li>
+
+			<li class="menu-item has-sub">
+				<span>Student's Profile</span>
+				<ul class="sub-menu">
+					<li>View Profile</li>
+					<li>Edit Profile</li>
+				</ul>
+			</li>
+
+		<li class="menu-item has-sub">
+			<span>Student's Details</span>
+			<ul class="sub-menu">
+				<li>Academic</li>
+				<li>Personal</li>
+			</ul>
+		</li>
+
+		<li class="menu-item has-sub">
+			<span>Attendance</span>
+			<ul class="sub-menu">
+				<li>Mark Attendance</li>
+				<li>Attendance Records</li>
+			</ul>
+		</li>
+		
+        </nav>
+     <div>
+		<li class="logout-btn">
+		<a href="{{ url_for('logout') }}">Logout</a>
+		</li>
+
+	</div>   
+    </div>
+	
+    <!-- Main Content -->
+    <div class="main-content">
+			<!-- Header -->
+
+            <h1>R. P. D. Convent School Sandaha, Varanasi</h1>
+            
+        </header>
+
+        <!-- Dashboard Cards -->
+        <div class="dashboard-cards">
+            <div class="card blue">
+                <h2>243</h2>
+                <p>Total Students</p>
+            </div>
+            <div class="card green">
+                <h2>235</h2>
+                <p>Active Students</p>
+            </div>
+            <div class="card red">
+                <h2>$31,234.00</h2>
+                <p>Fee Collected</p>
+            </div>
+                <div class="card navy" onclick="window.location.href='{{ url_for('exam_app.exam_home') }}'">
+				<h2>Examination</h2>
+				<p>Module</p>
+			</div>
+            <div class="card orange">
+                <h2>8</h2>
+                <p>In-active Students</p>
+            </div>
+            <div class="card blue-light">
+                <h2>Reports</h2>
+                <p><img src="{{ url_for('static', filename='Images/report.png') }}" alt="Reports Icon"></p>
+            </div>
+			<nav class="menu">
+    
+    </ul>
+</nav>
+
+        </div>
+    </div>
+	<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const items = document.querySelectorAll('.menu .menu-item.has-sub');
+  document.querySelectorAll('.menu .menu-item.has-sub > span').forEach(span => {
+    span.addEventListener('click', () => {
+      const item = span.parentElement;
+      // close others
+      items.forEach(el => { if (el !== item) el.classList.remove('open'); });
+      // toggle clicked
+      item.classList.toggle('open');
+    });
+  });
+});
+</script>
+</body>
+</html>

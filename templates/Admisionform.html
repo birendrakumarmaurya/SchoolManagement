@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Data Management</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #f4f7f6;
+            font-size: 0.9rem;
+        }
+        .main-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            padding: 20px;
+        }
+        .school-header {
+            text-align: center;
+            color: #343a40;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 10px;
+        }
+        .top-section {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .photo-box {
+            width: 120px;
+            height: 120px;
+            border: 2px dashed #ccc;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .photo-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+        .search-filters {
+            flex-grow: 1;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            align-self: flex-end;
+        }
+        .form-strip {
+            height: 5px;
+            background: linear-gradient(90deg, #0d6efd, #6610f2);
+            margin: 25px 0;
+            border-radius: 5px;
+        }
+        /* Make form controls compact */
+        .form-control-sm, .form-select-sm {
+            max-width: 2in; /* Approximate max-width */
+        }
+        .accordion-button:not(.collapsed) {
+            color: #fff;
+            background-color: #0d6efd;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+
+    <h1 class="school-header">🏫 Your School's Name</h1>
+
+    <form method="POST" enctype="multipart/form-data"
+          action="{{ url_for('add_student') if not stu else url_for('update_student', student_id=stu.SNo) }}">
+
+        <div class="top-section">
+            <div class="photo-col">
+                <div class="photo-box" onclick="document.getElementById('photoInput').click();">
+                    <img id="photoPreview"
+                         src="{% if stu and stu.Photo %}{{ url_for('static', filename='UserImages/' ~ stu.Photo) }}{% else %}{{ url_for('static', filename='default.png') }}{% endif %}"
+                         alt="Photo" class="photo-img">
+                </div>
+                <input type="file" id="photoInput" name="Photo" accept="image/*" style="display:none"
+                       onchange="previewPhoto(event, 'photoPreview')">
+                <input type="hidden" name="existing_photo" value="{{ stu.Photo if stu else '' }}">
+            </div>
+
+            <div class="search-filters">
+                <div>
+                    <label class="form-label fw-bold">Session</label>
+                    <select class="form-select form-select-sm" name="Years_search">
+                        <option value="">All Sessions</option>
+                        {# Populate with your session data #}
+                        <option value="2024-2025">2024-2025</option>
+                        <option value="2025-2026">2025-2026</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label fw-bold">Class</label>
+                    <select class="form-select form-select-sm" name="Class_search">
+                        <option value="">All Classes</option>
+                        {# Populate with your class data #}
+                        <option value="1">1</option>
+                        <option value="2">2th</option>
+						<option value="3">3</option>
+						<option value="4">4</option>
+						<option value="5">5</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label fw-bold">Section</label>
+                    <select class="form-select form-select-sm" name="Section_search">
+                        <option value="">All Sections</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label fw-bold">Status</label>
+                    <select class="form-select form-select-sm" name="Status">
+                        <option value="Active" {% if stu and stu.Status == 'Active' %}selected{% endif %}>Active</option>
+                        <option value="Inactive" {% if stu and stu.Status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save me-1"></i> Save</button>
+                <button type="button" class="btn btn-info btn-sm text-white"><i class="fas fa-search me-1"></i> Search</button>
+                <a href="{{ url_for('add_student') }}" class="btn btn-success btn-sm"><i class="fas fa-plus me-1"></i> New</a>
+            </div>
+        </div>
+
+        <div class="form-strip"></div>
+
+        <div class="accordion" id="studentFormAccordion">
+            
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOne">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        <i class="fas fa-graduation-cap me-2"></i> Academic Details
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#studentFormAccordion">
+                    <div class="accordion-body">
+                        <div class="row g-3">
+                            <div class="col-md-3"><label>Session</label><input type="text" name="Years" class="form-control form-control-sm" value="{{ stu.Years if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Admission Date</label><input type="date" name="AdmissionDate" class="form-control form-control-sm" value="{{ stu.AdmissionDate if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Registration No.</label><input type="text" name="RegNo" class="form-control form-control-sm" value="{{ stu.RegNo if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Roll No.</label><input type="text" name="RollNo" class="form-control form-control-sm" value="{{ stu.RollNo if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Class</label><input type="text" name="Class" class="form-control form-control-sm" value="{{ stu.Class if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Section</label><input type="text" name="Section" class="form-control form-control-sm" value="{{ stu.Section if stu else '' }}"></div>
+                            <div class="col-md-6"><label>Previous School</label><input type="text" name="NameOfPreviousSchool" class="form-control form-control-sm" value="{{ stu.NameOfPreviousSchool if stu else '' }}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingTwo">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        <i class="fas fa-user me-2"></i> Student's Personal Information
+                    </button>
+                </h2>
+                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#studentFormAccordion">
+                    <div class="accordion-body">
+                        <div class="row g-3">
+                            <div class="col-md-4"><label>Student Name</label><input type="text" name="StudentName" class="form-control form-control-sm" value="{{ stu.StudentName if stu else '' }}"></div>
+                            <div class="col-md-4"><label>Date of Birth</label><input type="date" name="Date_Of_Birth" class="form-control form-control-sm" value="{{ stu.Date_Of_Birth if stu else '' }}"></div>
+                            <div class="col-md-4"><label>Gender</label><select name="Gender" class="form-select form-select-sm"><option>Select</option><option>Male</option><option>Female</option></select></div>
+                            <div class="col-md-3"><label>Religion</label><input type="text" name="Religion" class="form-control form-control-sm" value="{{ stu.Religion if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Caste</label><input type="text" name="Cast" class="form-control form-control-sm" value="{{ stu.Cast if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Category</label><input type="text" name="Category" class="form-control form-control-sm" value="{{ stu.Category if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Nationality</label><input type="text" name="Nationality" class="form-control form-control-sm" value="{{ stu.Nationality if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Aadhar No.</label><input type="text" name="Aadhar" class="form-control form-control-sm" value="{{ stu.Aadhar if stu else '' }}"></div>
+                            <div class="col-md-3"><label>PEN</label><input type="text" name="PEN" class="form-control form-control-sm" value="{{ stu.PEN if stu else '' }}"></div>
+                            <div class="col-md-3"><label>PAN</label><input type="text" name="PAN" class="form-control form-control-sm" value="{{ stu.PAN if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Email</label><input type="email" name="Email" class="form-control form-control-sm" value="{{ stu.Email if stu else '' }}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                 <h2 class="accordion-header" id="headingThree">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                        <i class="fas fa-users me-2"></i> Parent's / Guardian's Information
+                    </button>
+                </h2>
+                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#studentFormAccordion">
+                    <div class="accordion-body">
+                        <div class="row g-3">
+                            <div class="col-md-4"><label>Father's Name</label><input type="text" name="FatherName" class="form-control form-control-sm" value="{{ stu.FatherName if stu else '' }}"></div>
+                            <div class="col-md-4"><label>Father's Contact</label><input type="text" name="FathersContact" class="form-control form-control-sm" value="{{ stu.FathersContact if stu else '' }}"></div>
+                            <div class="col-md-4"><label>Father's Occupation</label><input type="text" name="FathersOccupation" class="form-control form-control-sm" value="{{ stu.FathersOccupation if stu else '' }}"></div>
+                            <div class="col-md-4"><label>Mother's Name</label><input type="text" name="MotherName" class="form-control form-control-sm" value="{{ stu.MotherName if stu else '' }}"></div>
+                            <div class="col-md-4"><label>Mother's Contact</label><input type="text" name="MothersContact" class="form-control form-control-sm" value="{{ stu.MothersContact if stu else '' }}"></div>
+                            <div class="col-md-4"><label>Mother's Occupation</label><input type="text" name="MothersOccupation" class="form-control form-control-sm" value="{{ stu.MothersOccupation if stu else '' }}"></div>
+                            <div class="col-md-4"><label>Emergency Contact</label><input type="text" name="EmergencyContact" class="form-control form-control-sm" value="{{ stu.EmergencyContact if stu else '' }}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingFour">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                        <i class="fas fa-map-marker-alt me-2"></i> Address Information
+                    </button>
+                </h2>
+                <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#studentFormAccordion">
+                    <div class="accordion-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <h5>Local Address</h5>
+                                <input type="text" name="LocalAddress" placeholder="Street Address" class="form-control form-control-sm mb-2" value="{{ stu.LocalAddress if stu else '' }}">
+                                <div class="row g-2">
+                                    <div class="col-6"><input type="text" name="LCity" placeholder="City" class="form-control form-control-sm" value="{{ stu.LCity if stu else '' }}"></div>
+                                    <div class="col-6"><input type="text" name="LDistrict" placeholder="District" class="form-control form-control-sm" value="{{ stu.LDistrict if stu else '' }}"></div>
+                                    <div class="col-6"><input type="text" name="LState" placeholder="State" class="form-control form-control-sm" value="{{ stu.LState if stu else '' }}"></div>
+                                    <div class="col-6"><input type="text" name="Lpin" placeholder="PIN Code" class="form-control form-control-sm" value="{{ stu.Lpin if stu else '' }}"></div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Permanent Address</h5>
+                                <input type="text" name="PermanentAddress" placeholder="Street Address" class="form-control form-control-sm mb-2" value="{{ stu.PermanentAddress if stu else '' }}">
+                                <div class="row g-2">
+                                    <div class="col-6"><input type="text" name="PCity" placeholder="City" class="form-control form-control-sm" value="{{ stu.PCity if stu else '' }}"></div>
+                                    <div class="col-6"><input type="text" name="PDistrict" placeholder="District" class="form-control form-control-sm" value="{{ stu.PDistrict if stu else '' }}"></div>
+                                    <div class="col-6"><input type="text" name="PState" placeholder="State" class="form-control form-control-sm" value="{{ stu.PState if stu else '' }}"></div>
+                                    <div class="col-6"><input type="text" name="Ppin" placeholder="PIN Code" class="form-control form-control-sm" value="{{ stu.Ppin if stu else '' }}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingFive">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                       <i class="fas fa-heartbeat me-2"></i> Physical & Health Details
+                    </button>
+                </h2>
+                <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#studentFormAccordion">
+                    <div class="accordion-body">
+                        <div class="row g-3">
+                            <div class="col-md-3"><label>Height (cm)</label><input type="text" name="Height" class="form-control form-control-sm" value="{{ stu.Height if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Weight (kg)</label><input type="text" name="Weight" class="form-control form-control-sm" value="{{ stu.Weight if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Blood Group</label><input type="text" name="BloodGroup" class="form-control form-control-sm" value="{{ stu.BloodGroup if stu else '' }}"></div>
+                            <div class="col-md-3"><label>Identification Marks</label><input type="text" name="IdentificationMarks" class="form-control form-control-sm" value="{{ stu.IdentificationMarks if stu else '' }}"></div>
+                            <div class="col-md-12"><label>Medicine Prescription (if any)</label><textarea name="MedicinePrescription" class="form-control form-control-sm" rows="2">{{ stu.MedicinePrescription if stu else '' }}</textarea></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div> </form> </div> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function previewPhoto(event, previewId) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            const output = document.getElementById(previewId);
+            output.src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+</script>
+
+</body>
+</html>

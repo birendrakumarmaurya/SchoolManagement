@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reset Password</title>
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f2f5;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.reset-container {
+    width: 400px;
+    background: #fff;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    text-align: center;
+}
+.reset-container h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+.reset-container input {
+    width: 90%;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+}
+.reset-container button {
+    width: 95%;
+    padding: 12px;
+    background: #4a90e2;
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+.reset-container button:hover {
+    background: #357ABD;
+}
+.msg {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: bold;
+}
+.msg.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+.msg.success {
+    background: #d4edda;
+    color: #155724;
+}
+.back-link {
+    display: inline-block;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #4a90e2;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+.back-link:hover {
+    color: #357ABD;
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<div class="reset-container">
+    <h2>Reset Password</h2>
+    {% if msg %}
+        <div class="msg {% if 'successful' in msg %}success{% else %}error{% endif %}">{{ msg | safe }}</div>
+    {% endif %}
+    <form action="/reset" method="POST" enctype="multipart/form-data">
+        <input type="password" name="password" placeholder="New Password">
+        <input type="password" name="confirm" placeholder="Confirm New Password">
+        
+        <!-- ✅ Add photo upload option -->
+        <input type="file" name="photo" accept="image/*">
+
+        <button type="submit">Update</button>
+    </form>
+    <a href="/" class="back-link">← Back to Login</a>
+</div>
+</body>
+</html>

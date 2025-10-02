@@ -1,0 +1,354 @@
+x{# student_form.html - partial form only #}
+<form method="POST" enctype="multipart/form-data"
+      action="{{ url_for('add_student') if not stu else url_for('update_student', student_id=stu.SNo) }}"
+      class="student-form">
+
+  <!-- Top: photo on left, details on right -->
+  <div class="student-form-top">
+    <div class="photo-col">
+      <!-- 📷 Clickable photo -->
+      <div class="photo-box" onclick="document.getElementById('photoInput').click();">
+        <img id="photoPreview" 
+             src="{% if stu and stu.Photo %}{{ url_for('static', filename='Uploads/' ~ stu.Photo) }}{% else %}{{ url_for('static', filename='Uploads/default.png') }}{% endif %}" 
+             alt="Photo" class="photo-img">
+      </div>
+
+      <!-- Hidden file input -->
+      <input type="file" id="photoInput" name="Photo" accept="image/*" style="display:none"
+             onchange="previewPhoto(event,'photoPreview')">
+
+      <!-- Keep old photo if new one not chosen -->
+      <input type="hidden" name="existing_photo" value="{{ stu.Photo if stu else '' }}">
+    </div>
+
+    <div class="details-col">
+      <h2 class="form-title">🎓 Student’s Details Entry Form</h2>
+
+      <div class="row session-status">
+        <div class="col-md-4">
+          <label class="form-label">Session</label>
+          <select class="form-select form-select-sm" name="Years" required>
+            <option value="">Select</option>
+            {% for s in sessions %}
+              <option value="{{ s }}" {% if stu and stu.Years==s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+			
+        <div class="col-md-4">
+          <label class="form-label">Status</label>
+          <select class="form-select form-select-sm" name="Status" required>
+            <option value="Active" {% if stu and stu.Status=='Active' %}selected{% endif %}>Active</option>
+            <option value="Inactive" {% if stu and stu.Status=='Inactive' %}selected{% endif %}>Inactive</option>
+          </select>
+        </div>
+		      <!-- Actions -->
+		<div class="form-actions text-end mt-3">
+			<button type="submit" class="btn btn-success btn-sm">💾 Save</button>
+			<button type="reset" class="btn btn-warning btn-sm">Reset</button>
+			<a href="{{ url_for('students_management') }}" class="btn btn-secondary btn-sm">Back</a>
+		</div>
+		
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <ul class="nav nav-tabs tab-header-strip" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#basic" type="button">Basic Details</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#contact" type="button">Contact Details</button></li>
+	<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#address" type="button">Address Details</button></li>
+	<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#other" type="button">Other Details</button></li>
+  </ul>
+
+  <!-- ----------------- Student Form ----------------- -->
+
+  <!-- ---------------- Tab Contents ---------------- -->
+  <div class="tab-content mt-3">
+
+    <!-- ---------------- Basic Info ---------------- -->
+    <div class="tab-pane fade show active" id="basic">
+      <div class="row g-2">
+        <div class="col-md-3">
+          <label class="form-label">Reg No</label>
+          <input type="text" name="RegNo" class="form-control form-control-sm" value="{{ stu.RegNo if stu else '' }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Roll No</label>
+          <input type="text" name="RollNo" class="form-control form-control-sm" value="{{ stu.RollNo if stu else '' }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Student Name</label>
+          <input type="text" name="StudentName" class="form-control form-control-sm" value="{{ stu.StudentName if stu else '' }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Father Name</label>
+          <input type="text" name="FatherName" class="form-control form-control-sm" value="{{ stu.FatherName if stu else '' }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Mother Name</label>
+          <input type="text" name="MotherName" class="form-control form-control-sm" value="{{ stu.MotherName if stu else '' }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Class</label>
+          <input type="text" name="Class" class="form-control form-control-sm" value="{{ stu.Class if stu else '' }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Section</label>
+          <input type="text" name="Section" class="form-control form-control-sm" value="{{ stu.Section if stu else '' }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Gender</label>
+          <input type="text" name="Gender" class="form-control form-control-sm" value="{{ stu.Gender if stu else '' }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Category</label>
+          <input type="text" name="Category" class="form-control form-control-sm" value="{{ stu.Category if stu else '' }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Blood Group</label>
+          <input type="text" name="BloodGroup" class="form-control form-control-sm" value="{{ stu.BloodGroup if stu else '' }}">
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ---------------- Contact ---------------- -->
+    <div class="tab-pane fade" id="contact">
+      <div class="category-strip">Contact Details</div>
+      <div class="row g-2">
+
+        <div class="col-md-3">
+          <label class="form-label">Mother Contact</label>
+          <input type="text" name="MothersContact" class="form-control form-control-sm" value="{{ stu.MothersContact if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Mother Occupation</label>
+          <input type="text" name="MothersOccupation" class="form-control form-control-sm" value="{{ stu.MothersOccupation if stu else '' }}">
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label">Father Contact</label>
+          <input type="text" name="FathersContact" class="form-control form-control-sm" value="{{ stu.FathersContact if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Father Occupation</label>
+          <input type="text" name="FathersOccupation" class="form-control form-control-sm" value="{{ stu.FathersOccupation if stu else '' }}">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Emergency Contact</label>
+          <input type="text" name="EmergencyContact" class="form-control form-control-sm" value="{{ stu.EmergencyContact if stu else '' }}">
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Email</label>
+          <input type="email" name="Email" class="form-control form-control-sm" value="{{ stu.Email if stu else '' }}">
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ---------------- Addresses ---------------- -->
+	<div class="tab-pane fade" id="address">
+      <div class="category-strip">Local Address</div>
+      <div class="row g-2">
+
+        <div class="col-md-6">
+          <label class="form-label">Address</label>
+          <textarea name="LocalAddress" class="form-control form-control-sm address-textarea">{{ stu.LocalAddress if stu else '' }}</textarea>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">District</label>
+          <input type="text" name="LDistrict" class="form-control form-control-sm" value="{{ stu.LDistrict if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">City</label>
+          <input type="text" name="LCity" class="form-control form-control-sm" value="{{ stu.LCity if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">State</label>
+          <input type="text" name="LState" class="form-control form-control-sm" value="{{ stu.LState if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">PIN</label>
+          <input type="text" name="Lpin" class="form-control form-control-sm" value="{{ stu.Lpin if stu else '' }}">
+        </div>
+
+      </div>
+
+      <div class="category-strip mt-3">Permanent Address</div>
+      <div class="row g-2">
+
+        <div class="col-md-6">
+          <label class="form-label">Address</label>
+          <textarea name="PermanentAddress" class="form-control form-control-sm address-textarea">{{ stu.PermanentAddress if stu else '' }}</textarea>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">District</label>
+          <input type="text" name="PDistrict" class="form-control form-control-sm" value="{{ stu.PDistrict if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">City</label>
+          <input type="text" name="PCity" class="form-control form-control-sm" value="{{ stu.PCity if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">State</label>
+          <input type="text" name="PState" class="form-control form-control-sm" value="{{ stu.PState if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">PIN</label>
+          <input type="text" name="Ppin" class="form-control form-control-sm" value="{{ stu.Ppin if stu else '' }}">
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ---------------- Other Details ---------------- -->
+    <div class="tab-pane fade" id="other">
+      <div class="category-strip">Other Details 1</div>
+      <div class="row g-2">
+
+        <div class="col-md-3">
+          <label class="form-label">Nationality</label>
+          <input type="text" name="Nationality" class="form-control form-control-sm" value="{{ stu.Nationality if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Religion</label>
+          <input type="text" name="Religion" class="form-control form-control-sm" value="{{ stu.Religion if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Cast</label>
+          <input type="text" name="Cast" class="form-control form-control-sm" value="{{ stu.Cast if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Aadhar</label>
+          <input type="text" name="Aadhar" class="form-control form-control-sm" value="{{ stu.Aadhar if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">PEN</label>
+          <input type="text" name="PEN" class="form-control form-control-sm" value="{{ stu.PEN if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">PAN</label>
+          <input type="text" name="PAN" class="form-control form-control-sm" value="{{ stu.PAN if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Height</label>
+          <input type="text" name="Height" class="form-control form-control-sm" value="{{ stu.Height if stu else '' }}">
+        </div>
+        <div class="col-md-3">
+          <label class="form-label">Weight</label>
+          <input type="text" name="Weight" class="form-control form-control-sm" value="{{ stu.Weight if stu else '' }}">
+        </div>
+		<div class="category-strip">Other Details 2</div>
+		<div class="col-md-3">
+          <label class="form-label">Admission Date</label>
+          <input type="text" name="AdmissionDate" class="form-control form-control-sm" value="{{ stu.AdmissionDate if stu else '' }}">
+        </div>
+		<div class="col-md-3">
+          <label class="form-label">Medicine Prescription</label>
+          <input type="text" name="MedicinePrescription" class="form-control form-control-sm" value="{{ stu.MedicinePrescription if stu else '' }}">
+        </div>
+		<div class="col-md-3">
+          <label class="form-label">Identification Marks</label>
+          <input type="text" name="IdentificationMarks" class="form-control form-control-sm" value="{{ stu.IdentificationMarks if stu else '' }}">
+        </div>
+		<div class="col-md-3">
+          <label class="form-label">Name Of Previous School</label>
+          <input type="text" name="NameOfPreviousSchool" class="form-control form-control-sm" value="{{ stu.NameOfPreviousSchool if stu else '' }}">
+        </div>
+		
+		
+		
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+</form>
+
+<style>
+<!-- ---------------- CSS ---------------- -->
+<style>
+.form-control-sm {
+    width: 30%;
+    min-width: 120px;
+    padding: 5px 10px;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+    background-color: #fdfdfd;
+}
+
+.address-textarea {
+    width: 50% !important;
+    min-height: 70px;
+    background-color: #fdfdfd;
+    border: 1px solid #aaa;
+    border-radius: 4px;
+}
+
+.category-strip {
+    width: 100%;
+    padding: 5px 10px;
+    background-color: #e3e3e3;
+    color: #333;
+    font-weight: bold;
+    margin: 10px 0 5px 0;
+    border-radius: 4px;
+}
+
+.img-preview {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid #aaa;
+}
+/* Apply border and background to all input fields, textareas, selects */
+input.form-control,
+textarea.form-control,
+select.form-control {
+    border: 1px solid #999;   /* set border color */
+    border-radius: 4px;       /* optional rounded corners */
+    background-color: #fff;   /* optional background */
+    padding: 6px 10px;        /* optional padding */
+    box-sizing: border-box;   /* ensure padding doesn't break width */
+}
+
+
+
+ 
+.student-form-top { display:grid; grid-template-columns:140px 1fr; gap:12px; align-items:start; margin-bottom:8px;}
+.photo-box { width:100px; height:120px; border:1px solid #ccc; background:#f9f9f9; display:flex; align-items:center; justify-content:center; cursor:pointer;}
+.photo-img{ max-width:100%; max-height:100%; object-fit:cover;}
+.form-title{ font-size:20px; font-weight:600; margin-bottom:5px; margin-top:0px; text-align:center;}
+.session-status .form-label{ font-size:13px; margin-bottom:2px;}
+.session-status .form-select-sm{ font-size:13px; height:28px;}
+.tab-header-strip{ background:#1976d2; padding:4px;}
+.nav-tabs .nav-link{ color:#ffff; border:1px solid #ccc; font-size:15px; font-weight:600; padding:3px 15px; min-width:100px; }
+.nav-tabs .nav-link.active{ background:#0d47a1 ;}
+.student-form-body{ max-height:65vh; overflow-y:auto; padding:8px;}
+.form-control-sm, .form-select-sm, textarea.form-control-sm{ font-size:13px; height:28px; padding:2px 6px;}
+.category-strip{background:#e3f2ff; border-left:3px solid #1976d2; padding:4px 6px; margin:6px 0; font-weight:600;}
+.form-actions .btn{ padding:3px 10px; min-width:100px; align-items:right; justify-content:right;}
+</style>
+
+<script>
+function previewPhoto(event, targetId){
+  const reader = new FileReader();
+  reader.onload = e => { document.getElementById(targetId).src = e.target.result; };
+  reader.readAsDataURL(event.target.files[0]);
+}
+</script>

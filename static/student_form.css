@@ -1,0 +1,55 @@
+/* Outer form wrapper */
+.student-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Fixed top part */
+.student-form-top {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 8px;
+  background: #f9f9f9;
+  margin-bottom: 8px;
+}
+
+/* Scrollable body (only tabs area scrolls) */
+.student-form-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 200px;
+  max-height: 320px;
+  border: 1px solid #ddd;
+  border-top: none;
+  background: #fff;
+}
+
+/* Fixed footer */
+.student-form-footer {
+  border-top: 1px solid #ddd;
+  background: #f9f9f9;
+}
+
+/* Photo box */
+.photo-box {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Compact input styling */
+.form-control-sm, .form-select-sm, textarea.form-control-sm {
+  font-size: 0.9rem;
+}

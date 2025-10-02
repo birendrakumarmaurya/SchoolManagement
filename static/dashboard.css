@@ -1,0 +1,260 @@
+/* ===== Base ===== */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #0f172a;
+  background: #f5f7fa;
+  display: flex;
+}
+
+/* ===== Sidebar ===== */
+.sidebar {
+  width: 280px;
+  background: #2f6f73; /* teal */
+  color: #fff;
+  min-height: 100vh;
+  padding: 20px 10px;
+}
+
+/* Logo */
+
+.logo {
+  text-align: center;      /* Center all content inside logo container */
+  margin: 20px 0;          /* Vertical spacing */
+}
+
+.logo img {
+  width: 80px;             /* fixed width for logo */
+  height: auto;
+  display: inline-block;   /* so text-align works */
+  object-fit: contain;
+  margin-bottom: 8px;      /* small gap before text */
+}
+
+.logo span {
+  display: block;
+  text-align: center;
+  font-size: 16px;         /* adjust size */
+  font-weight: bold;
+  color: #fff;             /* adjust for your sidebar bg */
+}
+
+/* User pane */
+.user-pane {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 10px;
+}
+.user-pane .avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.5);
+  object-fit: cover;
+}
+.user-pane .uname { font-weight: 700; }
+
+/* DASHBOARD label */
+.breadcrumb {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 15px 30px 8px;   /* swap top & bottom padding */
+  border-top: 1px solid rgba(255,255,255,0.35);
+  margin-top: 12px;         /* space above line */
+  margin-bottom: 0;         /* remove space below */
+}
+
+
+/* ====== MENU ====== */
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.menu .menu-item {
+  position: relative;
+}
+
+.menu .menu-item > span {
+  display: block;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s ease, transform 0.05s ease;
+}
+
+.menu .menu-item > span:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+/* Submenu: hidden by default */
+.menu .sub-menu {
+  display: none;
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 18px;
+  border-left: 1px solid rgba(255,255,255,0.2);
+}
+
+.menu .sub-menu li span {
+  display: block;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.menu .sub-menu li span:hover {
+  background: rgba(255,255,255,0.15);
+}
+
+/* Show submenu when parent has .open */
+.menu .menu-item.open > .sub-menu {
+  display: block;
+}
+
+/* Caret arrow */
+.menu .menu-item.has-sub > span::after {
+  content: "▸";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.8;
+  transition: transform 0.2s;
+}
+
+.menu .menu-item.open > span::after { content: "▾"; }
+
+/* Hover shade */
+.menu .menu-item > span:hover {
+  background: rgba(255,255,255,0.18);
+}
+
+/* Submenu (hidden by default) */
+.submenu {
+  display: none;
+  margin: 8px 0 0 10px;
+  padding-left: 6px;
+  border-left: 2px solid rgba(255,255,255,0.25);
+}
+.menu .menu-item.open > .submenu { display: block; }
+
+/* Submenu items */
+
+.submenu li > span {
+  display: block;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.10);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.submenu li > span:hover {
+  background: rgba(255,255,255,0.22);
+}
+
+.logout-btn {
+  display: inline-block;
+ /* padding: 16px 15px;
+  background: #e74c3c;*/
+  text-align: center;   /* centers the button */
+  margin-top: 40px; 
+  color: white;
+ text-decoration: right;
+  border-radius: 5px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.logout-btn:hover {
+  background: #c0392b;
+}
+
+
+/* ===== Main Content ===== */
+.main-content {
+  flex: 1;
+  text-align:Center;
+  padding: 8px 14px;
+  
+}
+.user-info{
+	text-align:left;
+	font-size: 10px;
+}
+/* Header */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+.topbar h1 {
+  margin: 0;
+  color: #0b83f3;
+  font-size: 26px;
+  line-height: 1.2;
+}
+.user-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #ccc;
+}
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ===== Cards ===== */
+.dashboard-cards {
+  margin-top: 100px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.card {
+  width: 300px;
+  height: 150px;
+  padding: 20px;
+  margin: 10px;
+  border-radius: 10px;
+  color: #fff;
+  text-align: center;
+  font-weight: 700;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card h2 { margin: 0 0 6px 0; font-size: 28px; }
+.card p { margin: 0; font-weight: 600; opacity: 0.95; }
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 14px 24px rgba(0,0,0,0.24);
+}
+
+/* Colors */
+.blue       { background: #1e3d8f; }
+.green      { background: #2ea44f; }
+.red        { background: #d73a49; }
+.navy       { background: #0b3b18; }
+.orange     { background: #f66a0a; }
+.blue-light { background: #0366d6; }
+
+/* Small screens */
+@media (max-width: 860px) {
+  .sidebar { width: 230px; }
+  .topbar h1 { font-size: 20px; }
+}
