@@ -10,12 +10,6 @@ from twilio.rest import Client
 
 app = Flask(__name__)   # ✅ only once
 app.secret_key = "yoursecretkey123"   # change to something secure
-#------------------- for Exam module-----------
-import sys
-sys.path.append(r"D:/WebProjects/Examination")   # add exam module folder
-from exam_app import exam_app   # import blueprint
-app.register_blueprint(exam_app, url_prefix="/exam")
-#--------------------------------------------------------------
 #------------------------checking------------
 from functools import wraps
 from flask import session, redirect, url_for, flash, request
